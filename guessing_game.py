@@ -1,35 +1,46 @@
-import random
+from spellchecker import SpellChecker
 
-def guessing_game():
-    """A simple number guessing game where the user tries to guess a secret number."""
-    secret_number = random.randint(1, 100)
-    max_guesses = 10
-    guesses_taken = 0
+def check_english(text):
+    """Checks for spelling and basic grammatical errors in a given text."""
+    spell = SpellChecker()
+    words = text.lower().split()
+    misspelled = spell.unknown(words)
+    errors = []
 
-    print("Welcome to the Number Guessing Game!")
-    print(f"I'm thinking of a number between 1 and 100. You have {max_guesses} guesses.")
+    # Check for spelling mistakes
+    for word in misspelled:
+        corrected_word = spell.correction(word)
+        if corrected_word:
+            errors.append(f'In your sentence "{word}" is incorrect, the corrected one is "{corrected_word}".')
+        else:
+            errors.append(f'In your sentence "{word}" is incorrect and no correction was found.')
 
-    while guesses_taken < max_guesses:
-        try:
-            guess = int(input("Enter your guess: "))
-            guesses_taken += 1
+    # Basic check for repeated words
+    for i in range(len(words) - 1):
+        if words[i] == words[i+1]:
+            errors.append(f'In your sentence, the word "{words[i]}" is repeated consecutively.')
 
-            if guess < 1 or guess > 100:
-                print("Please guess a number between 1 and 100.")
-                continue
-
-            if guess < secret_number:
-                print("Too low!")
-            elif guess > secret_number:
-                print("Too high!")
-            else:
-                print(f"Congratulations! You guessed the number {secret_number} in {guesses_taken} guesses!")
-                return
-
-        except ValueError:
-            print("Invalid input. Please enter an integer.")
-
-    print(f"Sorry, you ran out of guesses. The secret number was {secret_number}.")
+    return errors
 
 if __name__ == "__main__":
-    guessing_game()
+    while True:
+        try:
+            user_input = input("Enter anything (or type 'quit' to exit): ")
+            if user_input.lower() == 'quit':
+                break
+
+            detected_errors = check_english(user_input)
+
+            if detected_errors:
+                print("Detected errors:")
+                for error in detected_errors:
+                    print(f"- {error}")
+            else:
+                print("No obvious spelling or grammatical errors detected.")
+            print("\n")
+        except EOFError:
+            print("\nInput stream closed unexpectedly. Exiting.")
+            break
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            break
